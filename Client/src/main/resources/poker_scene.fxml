@@ -67,32 +67,32 @@
                   <Ellipse fill="#00000026" layoutX="217.0" radiusX="210.0" radiusY="141.0" stroke="BLACK" strokeType="INSIDE" />
                   <ImageView fitHeight="95.0" fitWidth="92.0" layoutX="87.0" layoutY="14.0" preserveRatio="true">
                      <image>
-                        <Image url="back.png" />
+                        <Image url="back.png" fx:id="dealerCard1"/>
                      </image>
                   </ImageView>
                   <ImageView fitHeight="95.0" fitWidth="92.0" layoutX="184.0" layoutY="38.0" preserveRatio="true">
                      <image>
-                        <Image url="back.png" />
+                        <Image url="back.png" fx:id="dealerCard2"/>
                      </image>
                   </ImageView>
                   <ImageView fitHeight="95.0" fitWidth="92.0" layoutX="87.0" layoutY="262.0" preserveRatio="true">
                      <image>
-                        <Image url="back.png" />
+                        <Image url="back.png" fx:id="playerCard1"/>
                      </image>
                   </ImageView>
                   <ImageView fitHeight="95.0" fitWidth="92.0" layoutX="278.0" layoutY="262.0" preserveRatio="true">
                      <image>
-                        <Image url="back.png" />
+                        <Image url="back.png" fx:id="dealerCard3"/>
                      </image>
                   </ImageView>
                   <ImageView fitHeight="95.0" fitWidth="92.0" layoutX="184.0" layoutY="236.0" preserveRatio="true">
                      <image>
-                        <Image url="back.png" />
+                        <Image url="back.png" fx:id="playerCard2"/>
                      </image>
                   </ImageView>
                   <ImageView fitHeight="95.0" fitWidth="92.0" layoutX="278.0" layoutY="14.0" preserveRatio="true">
                      <image>
-                        <Image url="back.png" />
+                        <Image url="back.png" fx:id="playerCard3"/>
                      </image>
                   </ImageView>
                   <Label layoutX="194.0" layoutY="6.0" text="DEALER">
