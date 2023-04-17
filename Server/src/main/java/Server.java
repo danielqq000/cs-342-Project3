@@ -22,10 +22,23 @@ public class Server {
         this.port = port;
     }
 
+	// connection start and close
     public void startConn(){
         connthread.start();
     }
 
+	public void closeConn() throws Exception{
+        for( ClientThread t: connthread.sockets.values()) {
+            t.socket.close();
+        }
+        connthread.server.close();
+    }
+
+	private int getPort() {
+        return port;
+    }
+	
+	// send data to client
     public void sendToAll(Serializable data) throws Exception{
         System.out.println("Server Send (All):"+ data);
         for( ClientThread t: connthread.sockets.values()){
@@ -38,18 +51,7 @@ public class Server {
         t.out.writeObject(data);
     }
 
-    public void closeConn() throws Exception{
-        for( ClientThread t: connthread.sockets.values()) {
-            t.socket.close();
-        }
-        connthread.server.close();
-    }
-
-
-    protected int getPort() {
-        return port;
-    }
-
+	// GUI about Clients
     private void updateClientNumFX(){
         callback.accept("PLAYERNUM#" + connthread.sockets.size());
     }
@@ -62,12 +64,14 @@ public class Server {
         callback.accept(base);
     }
 
-
+	// For Server, recation when Client comes in
     class ConnThread extends Thread{
-        private ServerSocket server;
+        
+		private ServerSocket server;
         private Integer counter;
         private HashMap<String, ClientThread> sockets;
 
+		// constructoer
         ConnThread(){
             this.counter = 0;
             this.sockets = new HashMap<>();
@@ -75,7 +79,9 @@ public class Server {
 
         public void run() {
             try{
+				// create socket
                 this.server = new ServerSocket(getPort());
+
                 while(true) {
                     Socket s = server.accept();
                     String name = "Player" + this.counter;
@@ -106,55 +112,53 @@ public class Server {
         }
     }
 
+	// For Client thread, created when a new Client comes in
     public class ClientThread extends Thread {
-        private Socket socket;
+        
+		private Socket socket;
         private String name;
-        private Boolean canPlay;
         private ObjectOutputStream out;
         private ObjectInputStream in;
 
-        private ClientThread opponent;
-
-
+		// constructor
         ClientThread(Socket s, String name){
             this.socket = s;
             this.name = name;
-            this.canPlay = false;
 
             try {
                 this.socket.setTcpNoDelay(true);
                 this.out = new ObjectOutputStream(this.socket.getOutputStream());
-                this.in = new ObjectInputStream(this.socket.getInputStream());
-            }
-            catch (Exception e) {
-                System.out.println(e);
-                System.out.println("this is from ClientThread, Sever.java");
-            }
-        }
+				this.in = new ObjectInputStream(this.socket.getInputStream());
+			}
+			catch (Exception e) {
+				System.out.println(e);
+				throw new RuntimeException("Error from ClientThread constuctor, Server");
+			}
+		}
 
-        public void run() {
-            try{
-                while(true) {
-                    String data = in.readObject().toString();
-                    System.out.println("Server received:"+data);
+		public void run() {
+			try{
+				while(true) {
+					String data = in.readObject().toString();
+					System.out.println("Server received:"+data);
 
-                    if (data.contains("QUIT")) {
-                        Server.this.connthread.sockets.remove(this.name);
-                        refreshClientList();
-                        sendToAll("DISCONNECTED#" + this.name);
-                        this.socket.close();
-                        break;
-                    }
+					if (data.contains("QUIT")) {
+						Server.this.connthread.sockets.remove(this.name);
+						refreshClientList();
+						sendToAll("DISCONNECTED#" + this.name);
+						this.socket.close();
+						break;
+					}
 
-               }
-            }
-            catch(Exception e) {
-                System.out.println(e + "this is from run() in ClientThread in Server.java");
+				}
+			}
+			catch(Exception e) {
+				System.out.println(e);
+				callback.accept("connection Closed by ClientThread");
+				throw new RuntimeException("Error from ClientThread run(), Server");
+			}
+		}
 
-                callback.accept("connection Closed, this is from clientThread");
-            }
-        }
-
-    }
+	}
 
 }
