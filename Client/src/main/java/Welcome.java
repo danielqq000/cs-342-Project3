@@ -23,10 +23,10 @@ import java.io.FileNotFoundException;
 
 
 public class Welcome {
-	private static long ip = 0;
+	private static String ip;
 	private static int port = 0;
 
-	public void setIP(int ip) {
+	public void setIP(String ip) {
 		this.ip = ip;
 	}
 
@@ -34,16 +34,12 @@ public class Welcome {
 		this.port = port;
 	}
 
-	public long getIP() {
+	public String getIP() {
 		return this.ip;
 	}
-
-	;
 
 	public int getPort() {
 		return this.port;
 	}
 
-	;
-	//@Override
 }

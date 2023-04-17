@@ -53,7 +53,7 @@
 <?import javafx.scene.text.Font?>
 
 
-<BorderPane stylesheets="@style.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane fx:controller="FXML_Control" stylesheets="@style.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
    <center>
       <BorderPane BorderPane.alignment="CENTER">
          <center>
@@ -105,17 +105,17 @@
                         <Font name="Cambria Bold" size="12.0" />
                      </font>
                   </Label>
-                  <Button fx:id="foldButton" disable="true" layoutX="266.0" layoutY="195.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="54.0" text="FOLD">
+                  <Button fx:id="foldButton" onAction="#handleFoldButton" disable="true" layoutX="266.0" layoutY="195.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="54.0" text="FOLD">
                      <font>
                         <Font name="Cambria" size="14.0" />
                      </font>
                   </Button>
-                  <Button fx:id="playButton" disable="true" layoutX="190.0" layoutY="195.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="54.0" text="PLAY">
+                  <Button fx:id="playButton" onAction="#handlePlayButton" disable="true" layoutX="190.0" layoutY="195.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="54.0" text="PLAY">
                      <font>
                         <Font name="Cambria" size="14.0" />
                      </font>
                   </Button>
-                  <Button fx:id="drawButton" layoutX="114.0" layoutY="196.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="54.0" text="DRAW">
+                  <Button fx:id="drawButton" onAction="#handleDrawButton" layoutX="114.0" layoutY="196.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="54.0" text="DRAW">
                      <font>
                         <Font name="Cambria" size="12.0" />
                      </font>
@@ -135,7 +135,7 @@
                      </VBox.margin>
                      <children>
                         <Circle fill="#1f93ff00" radius="40.0" stroke="#ae9c0d" strokeType="INSIDE" />
-                        <TextField fx:id="pairPlusField" alignment="CENTER" promptText="Pair Plus">
+                        <TextField fx:id="pairPlusField" onAction="#handlePairPlusField" alignment="CENTER" promptText="Pair Plus">
                            <font>
                               <Font name="Cambria" size="12.0" />
                            </font>
@@ -148,7 +148,7 @@
                      </VBox.margin>
                      <children>
                         <Rectangle fill="#1f93ff00" height="60.0" rotate="45.0" stroke="#ae9c0d" strokeType="INSIDE" width="60.0" />
-                        <TextField fx:id="anteField" alignment="CENTER" promptText="Ante" />
+                        <TextField fx:id="anteField" onAction="#handleAnteField" alignment="CENTER" promptText="Ante" />
                      </children>
                   </StackPane>
                   <StackPane>
@@ -166,7 +166,7 @@
                               <Insets />
                            </StackPane.margin>
                         </Rectangle>
-                        <TextField alignment="CENTER" disable="true" opacity="0.9" promptText="Play" text="Play">
+                        <TextField fx:id="playField" alignment="CENTER" disable="true" opacity="0.9" promptText="Play" text="Play">
                            <font>
                               <Font name="Cambria" size="12.0" />
                            </font>
@@ -227,30 +227,38 @@
                               <Insets right="25.0" top="175.0" />
                            </HBox.margin>
                            <children>
-                              <Label alignment="TOP_LEFT" text="\$" style="-fx-text-fill: white;">
+                              <!--<Label alignment="TOP_LEFT" fx:id="balance" text="\$" style="-fx-text-fill: white;">
                                  <VBox.margin>
                                     <Insets bottom="40.0" />
                                  </VBox.margin>
                                  <font>
                                     <Font name="Cambria" size="12.0" />
                                  </font>
-                              </Label>
-                              <Label text="\$" style="-fx-text-fill: white;">
+                              </Label>-->
+                              <TextField fx:id="balanceField" onAction="#handleBalanceField" alignment="CENTER" promptText="Enter Balance">
+                                 <VBox.margin>
+                                    <Insets bottom="30.0" />
+                                 </VBox.margin>
+                                 <font>
+                                    <Font name="Cambria" size="12.0" />
+                                 </font>
+                              </TextField>
+                              <Label fx:id="pairPlus" text="\$" style="-fx-text-fill: white;">
                                  <font>
                                     <Font name="Cambria" size="12.0" />
                                  </font>
                               </Label>
-                              <Label text="\$" style="-fx-text-fill: white;">
+                              <Label fx:id="ante" text="\$" style="-fx-text-fill: white;">
                                  <font>
                                     <Font name="Cambria" size="12.0" />
                                  </font>
                               </Label>
-                              <Label text="\$" style="-fx-text-fill: white;">
+                              <Label fx:id="play" text="\$" style="-fx-text-fill: white;">
                                  <font>
                                     <Font name="Cambria" size="12.0" />
                                  </font>
                               </Label>
-                              <Label text="\$" style="-fx-text-fill: white;">
+                              <Label fx:id="winnings" text="\$" style="-fx-text-fill: white;">
                                  <font>
                                     <Font name="Cambria" size="12.0" />
                                  </font>
@@ -272,10 +280,10 @@
       <menus>
         <Menu mnemonicParsing="false" text="Options">
           <items>
-            <MenuItem mnemonicParsing="false" text="Fresh Start" />
-            <MenuItem mnemonicParsing="false" text="New Look" />
+            <MenuItem onAction="#handleFreshStartButton" mnemonicParsing="false" text="Fresh Start" />
+            <MenuItem onAction="#handleNewLookButton" mnemonicParsing="false" text="New Look" />
             <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Exit" />
+            <MenuItem onAction="#handleExitButton" mnemonicParsing="false" text="Exit" />
           </items>
         </Menu>
       </menus>

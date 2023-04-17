@@ -14,6 +14,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.io.Serializable;
+import java.util.function.Consumer;
+
 public class WelcomeFX {
     public static void display(Stage primaryStage) {
         Welcome welcome = new Welcome();
@@ -78,9 +81,10 @@ public class WelcomeFX {
         connectButton.setTranslateX(2);
         connectButton.setOnAction(event -> {
             try {
-                welcome.setIP(Integer.parseInt(ipTextField.getText())); //doesn't work with '.', need event handler
+                welcome.setIP(ipTextField.getText()); //doesn't work with '.', need event handler
                 welcome.setPort(Integer.parseInt(portTextField.getText()));
-                statusLabel.setText("Success!");
+                Client client = new Client(callback, welcome.getIP(), welcome.getPort());
+                statusLabel.setText("Connected!");
                 //connectToServer();
                 //joinGame();
                 // start button action
@@ -94,7 +98,7 @@ public class WelcomeFX {
                 // Clear the text fields
                 ipTextField.setText("");
                 portTextField.setText("");
-            }
+            } //catch ()
         });
 		/*connectButton.setOnAction(event -> {
 			connectToServer();
@@ -126,8 +130,8 @@ public class WelcomeFX {
 
         // Set the scene and show the stage
         primaryStage.setScene(scene);
-        primaryStage.setWidth(850);
-        primaryStage.setHeight(650);
+        primaryStage.setWidth(825);
+        primaryStage.setHeight(625);
         primaryStage.setTitle("Three Card Poker");
 
         root.setOnMouseClicked(event -> {
@@ -179,6 +183,10 @@ public class WelcomeFX {
 			}
 		});*/
     }
+    private static Consumer<Serializable> callback = data -> {
+        // Handle received data as needed
+        System.out.println("Received data: " + data);
+    };
 
 }
 
