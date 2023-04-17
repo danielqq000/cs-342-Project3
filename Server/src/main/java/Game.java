@@ -6,9 +6,11 @@ import java.util.Collections;
 import java.util.Random;
 
 
-public Game extends Info implements Comparable<Card> {
+public class Game extends Info {
 
 	private Deck deck;
+	private ArrayList<Card> playerHand;
+	private ArrayList<Card> dealerHand;
 
 	// constructor
 	public Game() {
@@ -18,28 +20,19 @@ public Game extends Info implements Comparable<Card> {
 		dealerHand = new ArrayList<>();
 	}
 
-	@Override
-	public int compareTo(Card other) {
-		if (this.getRank() < other.getRank())
-			return -1;
-		else if (this.getRank() > other.getRank())
-			return 1;
-		else
-			return 0;
-	}
-
 	// random card logic
 	private Card getRandomCard() {
 
+		Card card;
 		Random random = new Random();
 		int rnd1, rnd2;
+		String input;
 		
 		do{
-			string input;
 			rnd1 = random.nextInt(4) + 1;
 			rnd2 = random.nextInt(13) + 1;
 			input = rnd1 + "," + rnd2;
-			Card card = deck.getCard(input);
+			card = deck.getCard(input);
 		}while(card == null);
 
 		return card;
@@ -48,9 +41,8 @@ public Game extends Info implements Comparable<Card> {
 	public void dealCards() {
 
 		// check deck size
-		if(deck.size() <= 6){
-			throw new Exception("Not enough cards in the deck.");
-			return;
+		if(deck.getSize() <= 6){
+			throw new RuntimeException("Not enough cards in the deck.");
 		}
 
 		for(int i = 0; i < 3; i++){
@@ -66,15 +58,15 @@ public Game extends Info implements Comparable<Card> {
 	}
 
 	// check if dealer has queen high or better
-	public bool checkDealer() {
+	public boolean checkDealer() {
 		
 		if(evaluate(dealerHand) == 1){
 			int n = dealerHand.get(2).getRank();
 			if( n < 12)
-				return 0;
+				return false;
 		}
 
-		return 1;
+		return true;
 	}
 
 	public char determineWinner() {
@@ -82,18 +74,33 @@ public Game extends Info implements Comparable<Card> {
 		int dealerRank = evaluate(dealerHand);
 		int playerRank = evaluate(playerHand);
 
-		// d for dealer, p for player, t for tie
+		// D for dealer, P for player, T for tie
 		if (dealerRank > playerRank)
-			return 'd';
+			return 'D';
 		else if (dealerRank < playerRank)
-			return 'p';
+			return 'P';
 		else {
 			return higherEvaluate(dealerHand, playerHand);
 		}	
 	}
 
 	public int determinePairplus() {
-		return evaluate(playerHand);
+
+		int multi = evaluate(playerHand);
+		switch(multi){
+			case 6:
+				return 40;
+			case 5:
+				return 30;
+			case 4:
+				return 6;
+			case 3:
+				return 3;
+			case 2:
+				return 1;
+			default:
+				return 0;
+		}
 	}
 
 	private int evaluate(ArrayList<Card> hand) {
@@ -124,14 +131,14 @@ public Game extends Info implements Comparable<Card> {
 			return 3;
 
 		// is pair
-		if (rank1 == rank2 || rank2 == rank3 ||)
+		if (rank1 == rank2 || rank2 == rank3)
 			return 2;
 
 		return 1;
 	}
 
 	// if determine rank tie, check condition
-	private char higherEvaluate(dealerHand, playerHand) {
+	private char higherEvaluate(ArrayList<Card> dealerHand, ArrayList<Card> playerHand) {
 
 		int dealerBiggest = dealerHand.get(2).getRank();
 		int playerBiggest = playerHand.get(2).getRank();
@@ -142,11 +149,11 @@ public Game extends Info implements Comparable<Card> {
 			case 4:
 				// check biggest cards
 				if (dealerBiggest > playerBiggest)
-					return 'd';
+					return 'D';
 				else if (dealerBiggest < playerBiggest)
-					return 'p';
+					return 'P';
 				else 
-					return 't';
+					return 'T';
 
 			// flush/high card
 			case 3:
@@ -155,21 +162,21 @@ public Game extends Info implements Comparable<Card> {
 				// check cards from biggest to smallest
 				while(i >= 0){
 					if (dealerHand.get(i).getRank() > playerHand.get(i).getRank())
-						return 'd';
+						return 'D';
 					else if (dealerHand.get(i).getRank() < playerHand.get(i).getRank())
-						return 'p';
+						return 'P';
 					else
 						i--;
 				}
-				return 't';
+				return 'T';
 
 			// pair
 			case 2:
 				// check pair first
 				if (dealerHand.get(1).getRank() > playerHand.get(1).getRank())
-					return 'd';
-				else if (dealerHand.get(1).getRank() < playerHand.get(1).getRank())
-					return 'p';
+					return 'D';
+				if (dealerHand.get(1).getRank() < playerHand.get(1).getRank())
+					return 'P';
 				// check highest card
 				if (dealerHand.get(1).getRank() == dealerHand.get(2).getRank())
 					dealerBiggest = dealerHand.get(0).getRank();
@@ -177,17 +184,16 @@ public Game extends Info implements Comparable<Card> {
 					playerBiggest = playerHand.get(0).getRank();
 
 				if(dealerBiggest > playerBiggest)
-					return 'd';
+					return 'D';
 				else if (dealerBiggest < playerBiggest)
-					return 'p';
+					return 'P';
 				else 
-					return 't';
+					return 'T';
 
 			// else case all return tie
 			default:
-				return 't';
+				return 'T';
 		}
 	}
-
 
 }

@@ -37,4 +37,8 @@ public class Deck extends Card {
 		else
 			return null;
     }
+
+	public int getSize() {
+		return deck.size();
+	}
 }

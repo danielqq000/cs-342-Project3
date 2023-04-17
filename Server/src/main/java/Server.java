@@ -25,14 +25,14 @@ public class Server {
         connthread.start();
     }
 
-    public void sendAll(Serializable data) throws Exception{
+    public void sendToAll(Serializable data) throws Exception{
         System.out.println("Server Send All:"+ data);
         for( ClientThread t: connthread.sockets.values()){
             t.out.writeObject(data);
         }
     }
 
-    public void send(Serializable data, ClientThread t) throws Exception{
+    public void sendToOne(Serializable data, ClientThread t) throws Exception{
         System.out.println("Server Sent:" + data);
         t.out.writeObject(data);
     }
@@ -84,15 +84,15 @@ public class Server {
                     for(String n: sockets.keySet()){
                         allPreviousClient += n + "#";
                     }
-                    send(allPreviousClient, t);
+                    sendToOne(allPreviousClient, t);
 
-                    sendAll("CONNECTED#" + name);
+                    sendToAll("CONNECTED#" + name);
 
                     this.counter++;
                     this.sockets.put(name, t);
 
                     // inform this client about its name
-                    send("NAME#" + name, t);
+                    sendToOne("NAME#" + name, t);
 
                     // update client number in JavaFX
                     updateClientNumFX();
@@ -120,7 +120,7 @@ public class Server {
         private ObjectInputStream in;
 
         private ClientThread opponent;
-        private Round round;
+        private Game game;
 
 
         ClientThread(Socket s, String name){
@@ -136,90 +136,31 @@ public class Server {
             catch (Exception e) {
                 System.out.println(e);
                 System.out.println("this is from ClientThread, Sever.java");
-            }
-        }
+			}
+		}
 
-        public void run() {
-            try{
-                while(true) {
-                    String data = in.readObject().toString();
-                    System.out.println("Server received:"+data);
+		public void run() {
+			try{
+				while(true) {
+					String data = in.readObject().toString();
+					System.out.println("Server received:"+data);
 
-                    if (data.contains("QUIT")) {
-                        Server.this.connthread.sockets.remove(this.name);
-                        refreshClientList();
-                        sendAll("DISCONNECTED#" + this.name);
-                        this.socket.close();
-                        break;
-                    }
+					if (data.contains("QUIT")) {
+						Server.this.connthread.sockets.remove(this.name);
+						refreshClientList();
+						sendToAll("DISCONNECTED#" + this.name);
+						this.socket.close();
+						break;
+					}
+				}
+			}
+				catch(Exception e) {
+					System.out.println(e + "this is from run() in ClientThread in Server.java");
 
-                    if(this.canPlay == false) {
+					callback.accept("connection Closed, this is from clientThread");
+				}
+			}
 
-                        if (data.contains("CHALLENGE#")) {
-                            String player1 = this.name;
-                            String player2 = data.replace("CHALLENGE#", "");
+		}
 
-                            if (Server.this.connthread.sockets.get(player2).canPlay) {   // player2 is playing with other
-                                send("REJECT", this);
-                                //return;
-                            }
-                            else {
-                                this.opponent = Server.this.connthread.sockets.get(player2);
-                                this.opponent.opponent = this;
-
-                                this.canPlay = true;
-                                this.opponent.canPlay = true;
-
-                                this.round = new Round();
-                                this.opponent.round = this.round;
-
-                                send("ACCEPT#"+player2, this);
-                                send("ACCEPT#"+player1, this.opponent);
-
-                                //return;
-                            }
-                        }
-                    }
-                    else{
-                        if (data.contains("PLAY#")){
-                            String s = data.replace("PLAY#", "");
-                            this.round.addGesture(new Gesture(s, this.name));
-
-                            if(this.round.roundFinish()){
-                                String winnerName = this.round.getWinner();
-                                if (winnerName.equals("DRAW")){
-                                    send("DRAW#"+this.opponent.name, this);
-                                    send("DRAW#"+this.name, this.opponent);
-
-                                    this.canPlay = false;
-                                    this.opponent.canPlay = false;
-
-                                    this.round = null;
-                                    this.opponent.round = null;
-                                }
-                                else{
-                                    ClientThread winner = Server.this.connthread.sockets.get(winnerName);
-                                    send("WIN#" + winner.opponent.name, winner);
-                                    send("LOSE#" + winner.name, winner.opponent);
-
-                                    winner.canPlay = false;
-                                    winner.opponent.canPlay = false;
-
-                                    winner.round = null;
-                                    winner.opponent.round = null;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch(Exception e) {
-                System.out.println(e + "this is from run() in ClientThread in Server.java");
-
-                callback.accept("connection Closed, this is from clientThread");
-            }
-        }
-
-    }
-
-}
+	}

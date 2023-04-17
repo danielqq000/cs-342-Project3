@@ -31,11 +31,11 @@ public class Info extends Deck {
 		this.money = money;
 	}
 
-	public ArrayList<> getPlayer() {
+	public ArrayList<Card> getPlayer() {
 		return playerHand;
 	}
 	
-	public ArrayList<> getDealer() {
+	public ArrayList<Card> getDealer() {
 		return dealerHand;
 	}
 
