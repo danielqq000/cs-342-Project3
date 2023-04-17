@@ -20,7 +20,7 @@ public class ServerFX extends Application {
     private TextArea messages = new TextArea();
     private Label numClientLabel;    // show number of clients connecting to this server
     private Label serverStatus; // show waiting information
-    private Stage myStage;
+    private Stage stage;
 
     public static void main(String[] args) {
         launch(args);
@@ -28,9 +28,9 @@ public class ServerFX extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        this.myStage = primaryStage;
-        this.myStage.setScene(new Scene(createContent()));
-        this.myStage.show();
+        this.stage = primaryStage;
+        this.stage.setScene(new Scene(createContent()));
+        this.stage.show();
     }
 
     @Override
@@ -38,6 +38,7 @@ public class ServerFX extends Application {
         conn.closeConn();
     }
 
+	// create server
     private Server createServer() {
         return new Server(this.port,
                 data-> { Platform.runLater(()->{
@@ -56,60 +57,71 @@ public class ServerFX extends Application {
     private Parent createContent() {
 
         Label portLabel = new Label("Input Port:");
-        TextField input = new TextField("5555");
-        Button startServe = new Button("Start Server");
-        Button closeServe = new Button("Close Server");
-        closeServe.setDisable(true);
-        this.serverStatus = new Label("");
+        TextField input = new TextField();
+        Button startButton = new Button("Start Server");
+        Button closeButton = new Button("Close Server");
+        closeButton.setDisable(true);
+        this.serverStatus = new Label("Server off");
+		messages.setEditable(false);
+		
+		// HBox for port info
+        HBox HBox1 = new HBox(20, portLabel, input);
+		// HBox for server toggle buttons
+        HBox HBox2 = new HBox(20, startButton, closeButton);
 
-        HBox hb1 = new HBox(20, portLabel, input);
-        HBox hb2 = new HBox(20, startServe, closeServe);
-
-        Label labelNumClient = new Label("Client #:");
+		// numbers of current clients
+        Label labelNumClient = new Label("Client connected:");
         this.numClientLabel = new Label("0");
 
-        HBox hb3 = new HBox(20, labelNumClient, numClientLabel, serverStatus);
+		// HBox for Client info and server status
+        HBox HBox3 = new HBox(20, labelNumClient, numClientLabel, serverStatus);
 
-        startServe.setOnAction(event -> {
-            Integer portTmp = 0;
+		// start port depends on input port
+        startButton.setOnAction(event -> {
+            Integer portNum = 0;
             try {
-                portTmp = Integer.valueOf(input.getText());
+                portNum = Integer.valueOf(input.getText());
             }
             catch (Exception e){
                 serverStatus.setText("invalid port");
                 return;
             }
-            if(portTmp<1000){
+			// need at least 4 digits
+            if(portNum<1000){
                 serverStatus.setText("invalid port");
                 return;
             }
-            this.port = portTmp;
-            startServe.setDisable(true);
-            closeServe.setDisable(false);
-            serverStatus.setText("");
+
+            this.port = portNum;
+            startButton.setDisable(true);
+            closeButton.setDisable(false);
+            serverStatus.setText("Server on");
 
             this.conn = createServer();
             try{this.conn.startConn();}
             catch(Exception e){
+				throw new RuntimeException("Server failed to turn on!");
             }
         });
 
-        closeServe.setOnAction(event -> {
-            startServe.setDisable(false);
-            closeServe.setDisable(true);
-            serverStatus.setText("Stopped");
+		// close button, close all connection
+        closeButton.setOnAction(event -> {
+            startButton.setDisable(false);
+            closeButton.setDisable(true);
+            serverStatus.setText("Server off");
             messages.clear();
             this.numClientLabel.setText("0");
 
             try{this.conn.closeConn();}
             catch(Exception e){
+				throw new RuntimeException("Server failed to turn off!");
             }
         });
 
         messages.setPrefHeight(300);
 
         Label clientListLabel = new Label("Connected Client List:");
-        VBox root = new VBox(15, hb1, hb2, hb3, clientListLabel, messages);
+        VBox root = new VBox(15, HBox1, HBox2, HBox3, clientListLabel, messages);
         root.setPrefSize(300, 500);
         root.setPadding(new Insets(20));
 

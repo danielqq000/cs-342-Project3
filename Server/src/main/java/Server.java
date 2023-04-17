@@ -14,6 +14,7 @@ public class Server {
     private ConnThread connthread;
     private Consumer<Serializable> callback;
 
+	// constructor
     Server(int port, Consumer<Serializable> callback) {
         this.callback = callback;
         this.connthread = new ConnThread();
@@ -26,7 +27,7 @@ public class Server {
     }
 
     public void sendToAll(Serializable data) throws Exception{
-        System.out.println("Server Send All:"+ data);
+        System.out.println("Server Send (All):"+ data);
         for( ClientThread t: connthread.sockets.values()){
             t.out.writeObject(data);
         }
@@ -80,19 +81,12 @@ public class Server {
                     String name = "Player" + this.counter;
 
                     ClientThread t = new ClientThread(s, name);
-                    String allPreviousClient = "CONNECTED#";
-                    for(String n: sockets.keySet()){
-                        allPreviousClient += n + "#";
-                    }
-                    sendToOne(allPreviousClient, t);
-
-                    sendToAll("CONNECTED#" + name);
 
                     this.counter++;
                     this.sockets.put(name, t);
 
                     // inform this client about its name
-                    sendToOne("NAME#" + name, t);
+                    sendToOne("CONNECTED!\nNAME#" + name, t);
 
                     // update client number in JavaFX
                     updateClientNumFX();
@@ -120,7 +114,6 @@ public class Server {
         private ObjectInputStream in;
 
         private ClientThread opponent;
-        private Game game;
 
 
         ClientThread(Socket s, String name){
@@ -136,31 +129,32 @@ public class Server {
             catch (Exception e) {
                 System.out.println(e);
                 System.out.println("this is from ClientThread, Sever.java");
-			}
-		}
+            }
+        }
 
-		public void run() {
-			try{
-				while(true) {
-					String data = in.readObject().toString();
-					System.out.println("Server received:"+data);
+        public void run() {
+            try{
+                while(true) {
+                    String data = in.readObject().toString();
+                    System.out.println("Server received:"+data);
 
-					if (data.contains("QUIT")) {
-						Server.this.connthread.sockets.remove(this.name);
-						refreshClientList();
-						sendToAll("DISCONNECTED#" + this.name);
-						this.socket.close();
-						break;
-					}
-				}
-			}
-				catch(Exception e) {
-					System.out.println(e + "this is from run() in ClientThread in Server.java");
+                    if (data.contains("QUIT")) {
+                        Server.this.connthread.sockets.remove(this.name);
+                        refreshClientList();
+                        sendToAll("DISCONNECTED#" + this.name);
+                        this.socket.close();
+                        break;
+                    }
 
-					callback.accept("connection Closed, this is from clientThread");
-				}
-			}
+               }
+            }
+            catch(Exception e) {
+                System.out.println(e + "this is from run() in ClientThread in Server.java");
 
-		}
+                callback.accept("connection Closed, this is from clientThread");
+            }
+        }
 
-	}
+    }
+
+}
