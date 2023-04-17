@@ -3,12 +3,12 @@ import javafx.scene.image.Image;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Deck {
+public class Deck extends Card {
     private String cardSR;
     private Map<String, Card> deck = new HashMap<String, Card>();
     //1, 2, 3, 4 : clubs, spades, hearts, diamonds
     //11, 12, 13 : ace, queen, king
-    public void cardSort() {
+    public void createDeck() {
         String image;
         int value = 0;
         for (int suit = 1; suit <= 4; suit++) {
@@ -21,7 +21,7 @@ public class Deck {
                     value = rank%13+1;
                 image = rank + ".png";
                 Image cardFace = new Image(image, 92, 95, true, true);
-                Card card = new Card(value, suit, cardFace);
+                Card card = new Card(value, suit, cardSR, cardFace);
                 cardSR = String.valueOf(suit) + "," + String.valueOf(value);
                 deck.put(cardSR, card);
             }
@@ -29,6 +29,25 @@ public class Deck {
     }
 
     public Card getCard(String cardSR) {
-        return deck.get(cardSR);
+        Card card = deck.get(cardSR);
+        if (card != null) {
+            deck.remove(cardSR);
+            return card;
+        } else {
+            return null;
+        }
     }
+
+    public void setCard(Card card) {
+        deck.put(card.getCardSR(), card);
+    }
+
+    public Map<String, Card> getDeck() {
+        return deck;
+    }
+
+    public int getSize() {
+        return deck.size();
+    }
+
 }

@@ -8,7 +8,7 @@ public class SceneControl extends Application {
     }
 
     public void game(Stage primaryStage) {
-        GameFX.display(primaryStage);
+        FXML_Control.display(primaryStage);
     }
 
     public void result(Stage primaryStage) {
