@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.function.Consumer;
 
 public class WelcomeFX {
+
     public static void display(Stage primaryStage) {
         Welcome welcome = new Welcome();
         // Create a title
@@ -83,8 +84,10 @@ public class WelcomeFX {
             try {
                 welcome.setIP(ipTextField.getText()); //doesn't work with '.', need event handler
                 welcome.setPort(Integer.parseInt(portTextField.getText()));
-                Client client = new Client(callback, welcome.getIP(), welcome.getPort());
+                ClientThread client = new ClientThread(callback, welcome.getIP(), welcome.getPort());
                 statusLabel.setText("Connected!");
+                FXML_Control fxml = new FXML_Control();
+                fxml.client(client);
                 //connectToServer();
                 //joinGame();
                 // start button action

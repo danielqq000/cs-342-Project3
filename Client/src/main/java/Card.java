@@ -1,6 +1,8 @@
 import javafx.scene.image.Image;
 
-public class Card implements Comparable<Card> {
+import java.io.Serializable;
+
+public class Card implements Comparable<Card>, Serializable {
     private int rank; //ace, queen, king = 11, 12, 13
     private int suit; //1, 2, 3, 4 = clubs, spades, hearts, diamonds
     private String cardSR;

@@ -4,6 +4,7 @@ public class Info extends Deck {
 
     private ArrayList<Card> playerHand;
     private ArrayList<Card> dealerHand;
+    private String type;
 
     private int ante, bet, pairplus, money;
 
@@ -55,4 +56,11 @@ public class Info extends Deck {
         return money;
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return this.type;
+    }
 }
