@@ -84,12 +84,8 @@ public class WelcomeFX {
             try {
                 welcome.setIP(ipTextField.getText()); //doesn't work with '.', need event handler
                 welcome.setPort(Integer.parseInt(portTextField.getText()));
-<<<<<<< HEAD
-                Client client = new Client(callback, welcome.getIP(), welcome.getPort());
+                ClientThread client = new Client(callback, welcome.getIP(), welcome.getPort());
 				client.start();
-=======
-                ClientThread client = new ClientThread(callback, welcome.getIP(), welcome.getPort());
->>>>>>> e13a4911f40f6f8fea5ba5a7082d4ab97aac9117
                 statusLabel.setText("Connected!");
                 FXML_Control fxml = new FXML_Control();
                 fxml.client(client);
