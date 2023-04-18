@@ -10,13 +10,14 @@ import java.util.function.Consumer;
 
 
 public class ClientThread extends Thread{
-    Info info = new Info();
-
+    //Info info = new Info();
+    //Game game = new Game();
     Socket socketClient;
 
     ObjectOutputStream out;
     ObjectInputStream in;
     String host;
+    Boolean isConnected = false;
     private int port;
 
     private Consumer<Serializable> callback;
@@ -38,6 +39,7 @@ public class ClientThread extends Thread{
             out = new ObjectOutputStream(socketClient.getOutputStream());
             in = new ObjectInputStream(socketClient.getInputStream());
             socketClient.setTcpNoDelay(true);
+            isConnected = true;
         }
         catch(Exception e) {
             System.out.println("Failed to connect to Server");
@@ -54,6 +56,10 @@ public class ClientThread extends Thread{
 
     }
 
+    public boolean isConnected() {
+        return isConnected;
+    }
+
     public void sendValues(String data) {
 
         try {
@@ -67,7 +73,7 @@ public class ClientThread extends Thread{
     public void receiveValues() {
         try {
             String values = in.readUTF();
-            info.setType(values);
+            //game.setType(values);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -86,13 +92,17 @@ public class ClientThread extends Thread{
     public void receiveCards() {
         try {
             ArrayList<Card> receivedCards = (ArrayList<Card>) in.readObject();
-            info.updatePlayer(receivedCards);
+            //game.updatePlayer(receivedCards);
             receivedCards = (ArrayList<Card>) in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             // Handle exceptions
             e.printStackTrace();
         }
     }
+
+
+
+
 
 
     //welcomefx FX = new wee(info);

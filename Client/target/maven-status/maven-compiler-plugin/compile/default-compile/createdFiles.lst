@@ -1,5 +1,6 @@
 ResultsFX.class
 SceneControl.class
+ClientThread.class
 Results.class
 Card.class
 Game.class
@@ -8,5 +9,4 @@ WelcomeFX.class
 Info.class
 FXML_Control.class
 GameFX.class
-Client.class
 Deck.class

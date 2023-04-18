@@ -1,3 +1,4 @@
+import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -13,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.Serializable;
 import java.util.function.Consumer;
@@ -84,16 +86,34 @@ public class WelcomeFX {
             try {
                 welcome.setIP(ipTextField.getText()); //doesn't work with '.', need event handler
                 welcome.setPort(Integer.parseInt(portTextField.getText()));
-                ClientThread client = new Client(callback, welcome.getIP(), welcome.getPort());
+                ClientThread client = new ClientThread(callback, welcome.getIP(), welcome.getPort());
 				client.start();
-                statusLabel.setText("Connected!");
-                FXML_Control fxml = new FXML_Control();
-                fxml.client(client);
-                //connectToServer();
-                //joinGame();
-                // start button action
-                SceneControl sc = new SceneControl();
-                sc.game(primaryStage);
+                // Wait for the client to establish connection
+                Thread.sleep(1000); // Adjust the sleep duration as needed
+
+                if (client.isConnected()) {
+                    statusLabel.setText("Connected!");
+                    System.out.println("Client is connected.");
+                    PauseTransition pause = new PauseTransition(Duration.seconds(3));
+                    pause.setOnFinished(e -> {
+                        // Perform the action after the delay
+                        System.out.println("Delayed action performed");
+                        // Perform scene transition or other actions here
+                    });
+                    pause.play(); // Start the pause transition
+                    FXML_Control fxml = new FXML_Control();
+                    fxml.client(client);
+                    //connectToServer();
+                    //joinGame();
+                    // start button action
+                    SceneControl sc = new SceneControl();
+                    sc.game(primaryStage);
+                } else {
+                    statusLabel.setText("Connection Failed!");
+                    System.out.println("Client is not connected.");
+                    ipTextField.clear();
+                    portTextField.clear();
+                }
 
             } catch (NumberFormatException e){
                 // Handle the case where the input is not a valid integer
@@ -103,6 +123,9 @@ public class WelcomeFX {
                 ipTextField.setText("");
                 portTextField.setText("");
             } //catch ()
+            catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         });
 		/*connectButton.setOnAction(event -> {
 			connectToServer();
