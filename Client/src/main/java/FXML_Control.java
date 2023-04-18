@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class FXML_Control { // implements Initializable {
     ClientThread client;
@@ -71,6 +72,7 @@ public class FXML_Control { // implements Initializable {
 
     private static Scene scene;
     private static BorderPane root;
+    private static FXML_Control controller;
     public static void display(Stage primaryStage) {
         //BorderPane root = new BorderPane();
         FXMLLoader loader = new FXMLLoader(FXML_Control.class.getResource("poker_scene1.2.fxml"));
@@ -79,7 +81,7 @@ public class FXML_Control { // implements Initializable {
         try {
             //gameScene(loader);
             root = loader.load();
-            FXML_Control controller = loader.getController();
+            controller = loader.getController();
             root.setMinWidth(800);
             root.setMinHeight(600);
             scene = new Scene(root);
@@ -124,40 +126,58 @@ public class FXML_Control { // implements Initializable {
     public void client(ClientThread client) {
         this.client = client;
     }
-    public void handleBalanceField(ActionEvent event) {
+    public void handleBalanceField(ActionEvent event) throws IOException {
         game.setBalance(Integer.parseInt(balanceField.getText()));
-        client.sendValues("MONEY#" + Integer.toString(game.getBalance()));
+        //client.sendValues("MONEY#" + Integer.toString(game.getBalance()));
+        client.out.writeObject("MONEY#" + Integer.toString(game.getBalance()));
+
         balanceField.setDisable(true);
 //MONEY#500
         //next instruction
     }
     @FXML
-    public void handleAnteField(ActionEvent event) {
+    public void handleAnteField(ActionEvent event) throws IOException {
         game.setAnte(Integer.parseInt(anteField.getText()));
-        client.sendValues("ANTE#" + Integer.toString(game.getAnte()));
+        controller.anteField.setText(Integer.toString(game.getAnte()));
+        //client.sendValues("ANTE#" + Integer.toString(game.getAnte()));
+        //client.out.writeObject("ANTE#" + Integer.toString(game.getAnte()));
         anteField.setDisable(true);
     }
 
     @FXML
-    public void handlePairPlusField(ActionEvent event) {
+    public void handlePairPlusField(ActionEvent event) throws IOException {
         game.setPairPlus(Integer.parseInt(pairPlusField.getText()));
-        client.sendValues("PAIR#" + Integer.toString(game.getPairPlus()));
+        controller.pairPlusField.setText(Integer.toString(game.getPairPlus()));
+        //client.sendValues("PAIR#" + Integer.toString(game.getPairPlus()));
+        //client.out.writeObject("PAIR#" + Integer.toString(game.getPairPlus()));
         pairPlusField.setDisable(true);
     }
 
     @FXML
-    public void handleDrawButton(ActionEvent event) {
+    public void handleDrawButton(ActionEvent event) throws IOException, ClassNotFoundException {
         // handle button click here
         // hand out cards (opacity)
         // flip player cards (swap)
-        Timeline timeline = new Timeline();
+        client.out.writeObject("DRAW#" + game.getAnte() + "#" + game.getPairPlus());
+        game.setType((String) client.in.readObject());
+        if (game.getType() == "CARDS#") {
+            ArrayList<Card> receivedCards = (ArrayList<Card>) client.in.readObject();
+            game.updatePlayer(receivedCards);
+            //game.updatePlayer(receivedCards);
+            receivedCards = (ArrayList<Card>) client.in.readObject();
+            game.updateDealer(receivedCards);
+        }
+
+
+        /*Timeline timeline = new Timeline();
         for (int i = 1; i <= 6; i++) {
             ImageView image = new ImageView(dealerCard1);
             image.setOpacity(1);
 
             timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(i + 1)));
         }
-        timeline.play();
+        timeline.play();*/
+        drawButton.setDisable(true);
     }
 
     @FXML
@@ -175,10 +195,16 @@ public class FXML_Control { // implements Initializable {
     public void handleFreshStartButton(ActionEvent event) {
         // handle button click here
         //reset
+        balanceField.clear();
+        anteField.clear();
+        pairPlusField.clear();
+        playField.clear();
+        game.setBalance(0);
+        game.setAnte(0);
+        game.setPairPlus(0);
 
     }
     String[] colors = {
-            "#2E8B57", // Sea Green
             "#4169E1", // Royal Blue
             "#8B008B", // Dark Magenta
             "#FFD700", // Gold
@@ -188,7 +214,7 @@ public class FXML_Control { // implements Initializable {
             "#00BFFF", // Deep Sky Blue
             "#FF69B4", // Hot Pink
             "#ADFF2F", // Green Yellow
-            "#2E8B57"  // Stock
+            "#2E8B57"  // Stock / Sea Green
     };
 
     int count = 0;
@@ -200,10 +226,13 @@ public class FXML_Control { // implements Initializable {
 
         root.setStyle("-fx-background-color: " + colors[count] + ";");
         count++;
+        if (count > 9)
+            count = 0;
     }
 
     @FXML
-    public void handleExitButton(ActionEvent event) {
+    public void handleExitButton(ActionEvent event) throws IOException {
+        client.out.writeObject("QUIT#");
         System.exit(0);
     }
 
