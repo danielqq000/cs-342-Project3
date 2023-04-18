@@ -1,6 +1,7 @@
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -65,7 +66,7 @@ public class Server {
     }
 
 	// For Server, recation when Client comes in
-    class ConnThread extends Thread{
+    class ConnThread extends Thread {
         
 		private ServerSocket server;
         private Integer counter;
@@ -80,8 +81,8 @@ public class Server {
         public void run() {
             try{
 				// create socket
-                this.server = new ServerSocket(getPort());
-
+                this.server = new ServerSocket(getPort(), 4, InetAddress.getByName("127.0.0.1"));
+				System.out.println(server.getInetAddress().getHostAddress() + ": " + server.getLocalPort());
                 while(true) {
                     Socket s = server.accept();
                     String name = "Player" + this.counter;
@@ -119,6 +120,7 @@ public class Server {
         private String name;
         private ObjectOutputStream out;
         private ObjectInputStream in;
+		private Game game;
 
 		// constructor
         ClientThread(Socket s, String name){
@@ -140,17 +142,110 @@ public class Server {
 			try{
 				while(true) {
 					String data = in.readObject().toString();
-					System.out.println("Server received:"+data);
+					String[] tokens = data.split("#");
 
+					// QUIT
 					if (data.contains("QUIT")) {
 						Server.this.connthread.sockets.remove(this.name);
 						refreshClientList();
-						sendToAll("DISCONNECTED#" + this.name);
+						sendToAll("PLAYER #" + this.name + "DISCONNECTED");
 						this.socket.close();
 						break;
 					}
 
+					// game start
+					// MONEY# + <money>
+					if(data.contains("MONEY#")) {
+						game.updateMoney(Integer.parseInt(tokens[1]));
+					}
+					// DRAW# + <ante> + # + <pairplus>
+					else if(data.contains("DRAW#")) {
+						// get ante
+						game.updateAnte(Integer.parseInt(tokens[1]) + game.getAnte());
+						game.updatePairplus(Integer.parseInt(tokens[2]));
+						game.updateMoney(game.getMoney() - Integer.parseInt(tokens[1]) - Integer.parseInt(tokens[2]));
+
+						// create hand and send
+						try{
+						game.dealCards();
+						}catch(Exception e){
+							game = new Game();
+							game.dealCards();
+						}
+						out.writeObject("CARDS#");
+						out.writeObject(game.getPlayer());
+						out.writeObject(game.getDealer());
+						// send status
+						String s = "STATS#MONEY#" + game.getMoney() + "ANTE#" + game.getAnte() + "PAIR#" + game.getPairplus();
+						out.writeObject(s);
+					}
+					// BET# + <bet>
+					else if(data.contains("BET#")) {
+						// take bets
+						game.updateBet(Integer.parseInt(tokens[1]));
+						game.updateMoney(game.getMoney() - Integer.parseInt(tokens[1]));
+
+						// send status
+						out.writeObject("STATS#MONEY#" + game.getMoney() + "BET#" + game.getBet());
+
+						// game logic
+						// check pairplus first
+						int ante = game.getAnte();
+						int bet = game.getBet();
+						int pp = game.getPairplus();
+						pp *= game.determinePairplus();
+						game.updatePairplus(0);
+
+						// check dealer's Queen high
+						if(!game.checkDealer()) {
+							bet = 0;
+							game.updateAnte(ante);
+							game.updateBet(0);
+							game.updateMoney(game.getMoney() + bet + pp);
+							out.writeObject("QH#MONEY#" + game.getMoney() + "ANTE#" + ante + "BET#" + bet + "PAIR#" + pp);
+						}
+						else{
+							char c = game.determineWinner();
+							// player wins
+							if( c == 'P') {
+								ante *= 2;
+								bet *= 2;
+								game.updateAnte(0);
+								game.updateBet(0);
+								game.updateMoney(game.getMoney() + ante + bet + pp);
+								out.writeObject("WIN#MONEY#" + game.getMoney() + "ANTE#" + ante + "BET#" + bet + "PAIR#" + pp);
+							}
+							// player loses
+							else if ( c == 'D') {
+								ante = 0;
+								bet = 0;
+								game.updateAnte(0);
+								game.updateBet(0);
+								game.updateMoney(game.getMoney() + ante + bet + pp);
+								out.writeObject("LOSE#MONEY#" + game.getMoney() + "ANTE#" + ante + "BET#" + bet + "PAIR#" + pp);
+							}
+							// player ties
+							else{
+								bet = 0;
+								game.updateAnte(0);
+								game.updateBet(0);
+								game.updateMoney(game.getMoney() + bet + pp);
+								out.writeObject("TIE#MONEY#" + game.getMoney() + "ANTE#" + ante + "BET#" + bet + "PAIR#" + pp);
+							}
+						}
+
+						// update STATS
+						out.writeObject("STATS#MONEY#" + game.getMoney() + "ANTE#" + game.getAnte() + "BET#" + game.getBet() + "PAIR#" + game.getPairplus());
+					}
+
+					// FOLD
+					if(data.contains("FOLD#")) {
+						game.updateAnte(0);
+						game.updateBet(0);
+						game.updatePairplus(0);
+					}
 				}
+
 			}
 			catch(Exception e) {
 				System.out.println(e);
