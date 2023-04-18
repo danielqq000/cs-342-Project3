@@ -84,6 +84,7 @@ public class WelcomeFX {
                 welcome.setIP(ipTextField.getText()); //doesn't work with '.', need event handler
                 welcome.setPort(Integer.parseInt(portTextField.getText()));
                 Client client = new Client(callback, welcome.getIP(), welcome.getPort());
+				client.start();
                 statusLabel.setText("Connected!");
                 //connectToServer();
                 //joinGame();

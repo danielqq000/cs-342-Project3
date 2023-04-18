@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.function.Consumer;
 
@@ -31,12 +32,16 @@ public class Client extends Thread{
     public void run() {
 
         try {
-            socketClient = new Socket(this.host, this.port);
+            socketClient = new Socket(InetAddress.getByName(this.host), this.port);
             out = new ObjectOutputStream(socketClient.getOutputStream());
             in = new ObjectInputStream(socketClient.getInputStream());
             socketClient.setTcpNoDelay(true);
+			System.out.println(socketClient.getInetAddress() + ": " + socketClient.getPort());
         }
-        catch(Exception e) {}
+        catch(Exception e) {
+			System.out.println(e.getMessage());
+			throw new RuntimeException("Client failed");
+		}
 
         while(true) {
 
